@@ -30,7 +30,7 @@ class MarkdownToPPTXApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Конвертер Markdown → PowerPoint")
-        self.root.geometry("720x480")
+        self.root.geometry("720x580")
         self.root.resizable(False, False)
         
         # Современная цветовая схема
@@ -77,7 +77,7 @@ class MarkdownToPPTXApp:
         
         # Заголовок с иконкой
         header_frame = tk.Frame(main_container, bg=self.colors['bg_primary'])
-        header_frame.pack(fill=tk.X, pady=(0, 30))
+        header_frame.pack(fill=tk.X, pady=30)
         
         title_label = tk.Label(
             header_frame,
@@ -101,7 +101,7 @@ class MarkdownToPPTXApp:
         
         # Фрейм для выбора входного файла
         input_frame = tk.Frame(main_container, bg=self.colors['bg_secondary'], relief=tk.FLAT, bd=0)
-        input_frame.pack(fill=tk.X, pady=(0, 20))
+        input_frame.pack(fill=tk.X, pady=20)
         
         # Внутренний фрейм с отступами
         input_inner = tk.Frame(input_frame, bg=self.colors['bg_secondary'], padx=20, pady=18)
@@ -115,7 +115,7 @@ class MarkdownToPPTXApp:
             fg=self.colors['text_primary'],
             anchor=tk.W
         )
-        input_label.pack(anchor=tk.W, pady=(0, 10))
+        input_label.pack(anchor=tk.W, pady=10)
         
         input_file_frame = tk.Frame(input_inner, bg=self.colors['bg_secondary'])
         input_file_frame.pack(fill=tk.X)
@@ -129,6 +129,7 @@ class MarkdownToPPTXApp:
             bd=1,
             bg='#ffffff',
             fg=self.colors['text_primary'],
+            readonlybackground='#ffffff',
             insertbackground=self.colors['text_primary'],
             highlightthickness=1,
             highlightcolor=self.colors['primary'],
@@ -155,7 +156,7 @@ class MarkdownToPPTXApp:
         
         # Фрейм для выбора выходного файла
         output_frame = tk.Frame(main_container, bg=self.colors['bg_secondary'], relief=tk.FLAT, bd=0)
-        output_frame.pack(fill=tk.X, pady=(0, 30))
+        output_frame.pack(fill=tk.X, pady=15)
         
         # Внутренний фрейм с отступами
         output_inner = tk.Frame(output_frame, bg=self.colors['bg_secondary'], padx=20, pady=18)
@@ -169,7 +170,7 @@ class MarkdownToPPTXApp:
             fg=self.colors['text_primary'],
             anchor=tk.W
         )
-        output_label.pack(anchor=tk.W, pady=(0, 10))
+        output_label.pack(anchor=tk.W, pady=10)
         
         output_file_frame = tk.Frame(output_inner, bg=self.colors['bg_secondary'])
         output_file_frame.pack(fill=tk.X)
@@ -207,22 +208,25 @@ class MarkdownToPPTXApp:
         output_button.pack(side=tk.RIGHT)
         
         # Кнопка конвертации
+        button_frame = tk.Frame(main_container, bg=self.colors['bg_primary'])
+        button_frame.pack(fill=tk.X, pady=20)
+        
         convert_button = tk.Button(
-            main_container,
+            button_frame,
             text="🚀 Конвертировать",
             command=self.convert,
-            font=get_font('default', 16, 'bold'),
+            font=get_font('default', 18, 'bold'),
             bg=self.colors['primary'],
-            fg="white",
+            fg=self.colors['text_primary'],
             relief=tk.FLAT,
             bd=0,
-            padx=40,
-            pady=16,
+            padx=50,
+            pady=18,
             cursor="hand2",
             activebackground=self.colors['primary_hover'],
-            activeforeground="white"
+            activeforeground=self.colors['text_primary']
         )
-        convert_button.pack(pady=(10, 20))
+        convert_button.pack()
         
         # Статус бар
         status_frame = tk.Frame(main_container, bg=self.colors['bg_primary'])
@@ -247,11 +251,10 @@ class MarkdownToPPTXApp:
         if filename:
             self.input_file.set(filename)
             # Автоматически генерируем имя выходного файла
-            if not self.output_file.get():
-                base_name = os.path.splitext(os.path.basename(filename))[0]
-                directory = os.path.dirname(filename)
-                output_path = os.path.join(directory, f"{base_name}.pptx")
-                self.output_file.set(output_path)
+            base_name = os.path.splitext(os.path.basename(filename))[0]
+            directory = os.path.dirname(filename)
+            output_path = os.path.join(directory, f"{base_name}.pptx")
+            self.output_file.set(output_path)
     
     def browse_output_file(self):
         """Открывает диалог выбора выходного файла"""
