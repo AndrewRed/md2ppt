@@ -8,12 +8,47 @@ import os
 import sys
 from md_to_pptx import convert_markdown_to_pptx
 
+def get_font(family, size, weight="normal"):
+    """Возвращает кортеж шрифта с fallback для кроссплатформенности"""
+    # Попытка использовать современные шрифты с fallback
+    preferred_fonts = {
+        'default': ('Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'),
+        'mono': ('Consolas', 'Monaco', 'Courier New', 'monospace')
+    }
+    
+    # Выбираем первый доступный шрифт из списка
+    font_family = family
+    if family in preferred_fonts:
+        # Для tkinter используем первый шрифт, система сама выберет доступный
+        font_family = preferred_fonts[family][0]
+    
+    if weight == "bold":
+        return (font_family, size, "bold")
+    return (font_family, size)
+
 class MarkdownToPPTXApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Конвертер Markdown → PowerPoint")
-        self.root.geometry("600x300")
+        self.root.geometry("720x480")
         self.root.resizable(False, False)
+        
+        # Современная цветовая схема
+        self.colors = {
+            'bg_primary': '#f8f9fa',
+            'bg_secondary': '#ffffff',
+            'bg_accent': '#e9ecef',
+            'primary': '#0066cc',
+            'primary_hover': '#0052a3',
+            'success': '#28a745',
+            'text_primary': '#212529',
+            'text_secondary': '#6c757d',
+            'border': '#dee2e6',
+            'shadow': '#adb5bd'
+        }
+        
+        # Настройка стиля окна
+        self.root.configure(bg=self.colors['bg_primary'])
         
         # Переменные
         self.input_file = tk.StringVar()
@@ -36,90 +71,169 @@ class MarkdownToPPTXApp:
     
     def create_widgets(self):
         """Создает виджеты интерфейса"""
-        # Заголовок
+        # Главный контейнер с отступами
+        main_container = tk.Frame(self.root, bg=self.colors['bg_primary'], padx=40, pady=30)
+        main_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Заголовок с иконкой
+        header_frame = tk.Frame(main_container, bg=self.colors['bg_primary'])
+        header_frame.pack(fill=tk.X, pady=(0, 30))
+        
         title_label = tk.Label(
-            self.root,
-            text="Конвертер Markdown в PowerPoint",
-            font=("Arial", 16, "bold"),
-            pady=20
+            header_frame,
+            text="📄 Конвертер Markdown в PowerPoint",
+            font=get_font('default', 24, 'bold'),
+            bg=self.colors['bg_primary'],
+            fg=self.colors['text_primary'],
+            pady=0
         )
         title_label.pack()
         
+        subtitle_label = tk.Label(
+            header_frame,
+            text="Преобразуйте ваши Markdown файлы в профессиональные презентации",
+            font=get_font('default', 13),
+            bg=self.colors['bg_primary'],
+            fg=self.colors['text_secondary'],
+            pady=8
+        )
+        subtitle_label.pack()
+        
         # Фрейм для выбора входного файла
-        input_frame = tk.Frame(self.root, pady=10)
-        input_frame.pack(fill=tk.X, padx=20)
+        input_frame = tk.Frame(main_container, bg=self.colors['bg_secondary'], relief=tk.FLAT, bd=0)
+        input_frame.pack(fill=tk.X, pady=(0, 20))
         
-        tk.Label(
-            input_frame,
-            text="Входной файл (Markdown):",
-            font=("Arial", 10)
-        ).pack(anchor=tk.W)
+        # Внутренний фрейм с отступами
+        input_inner = tk.Frame(input_frame, bg=self.colors['bg_secondary'], padx=20, pady=18)
+        input_inner.pack(fill=tk.BOTH, expand=True)
         
-        input_file_frame = tk.Frame(input_frame)
-        input_file_frame.pack(fill=tk.X, pady=5)
+        input_label = tk.Label(
+            input_inner,
+            text="📥 Входной файл (Markdown)",
+            font=get_font('default', 14, 'bold'),
+            bg=self.colors['bg_secondary'],
+            fg=self.colors['text_primary'],
+            anchor=tk.W
+        )
+        input_label.pack(anchor=tk.W, pady=(0, 10))
+        
+        input_file_frame = tk.Frame(input_inner, bg=self.colors['bg_secondary'])
+        input_file_frame.pack(fill=tk.X)
         
         self.input_entry = tk.Entry(
             input_file_frame,
             textvariable=self.input_file,
-            font=("Arial", 10),
-            state="readonly"
+            font=get_font('default', 13),
+            state="readonly",
+            relief=tk.SOLID,
+            bd=1,
+            bg='#ffffff',
+            fg=self.colors['text_primary'],
+            insertbackground=self.colors['text_primary'],
+            highlightthickness=1,
+            highlightcolor=self.colors['primary'],
+            highlightbackground=self.colors['border']
         )
-        self.input_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        self.input_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10), ipady=10)
         
-        tk.Button(
+        input_button = tk.Button(
             input_file_frame,
-            text="Выбрать...",
+            text="Выбрать файл",
             command=self.browse_input_file,
-            width=12
-        ).pack(side=tk.RIGHT)
+            font=get_font('default', 12, 'bold'),
+            bg=self.colors['bg_accent'],
+            fg=self.colors['text_primary'],
+            relief=tk.FLAT,
+            bd=0,
+            padx=20,
+            pady=10,
+            cursor="hand2",
+            activebackground='#d0d3d6',
+            activeforeground=self.colors['text_primary']
+        )
+        input_button.pack(side=tk.RIGHT)
         
         # Фрейм для выбора выходного файла
-        output_frame = tk.Frame(self.root, pady=10)
-        output_frame.pack(fill=tk.X, padx=20)
+        output_frame = tk.Frame(main_container, bg=self.colors['bg_secondary'], relief=tk.FLAT, bd=0)
+        output_frame.pack(fill=tk.X, pady=(0, 30))
         
-        tk.Label(
-            output_frame,
-            text="Выходной файл (PowerPoint):",
-            font=("Arial", 10)
-        ).pack(anchor=tk.W)
+        # Внутренний фрейм с отступами
+        output_inner = tk.Frame(output_frame, bg=self.colors['bg_secondary'], padx=20, pady=18)
+        output_inner.pack(fill=tk.BOTH, expand=True)
         
-        output_file_frame = tk.Frame(output_frame)
-        output_file_frame.pack(fill=tk.X, pady=5)
+        output_label = tk.Label(
+            output_inner,
+            text="📤 Выходной файл (PowerPoint)",
+            font=get_font('default', 14, 'bold'),
+            bg=self.colors['bg_secondary'],
+            fg=self.colors['text_primary'],
+            anchor=tk.W
+        )
+        output_label.pack(anchor=tk.W, pady=(0, 10))
+        
+        output_file_frame = tk.Frame(output_inner, bg=self.colors['bg_secondary'])
+        output_file_frame.pack(fill=tk.X)
         
         self.output_entry = tk.Entry(
             output_file_frame,
             textvariable=self.output_file,
-            font=("Arial", 10)
+            font=get_font('default', 13),
+            relief=tk.SOLID,
+            bd=1,
+            bg='#ffffff',
+            fg=self.colors['text_primary'],
+            insertbackground=self.colors['text_primary'],
+            highlightthickness=1,
+            highlightcolor=self.colors['primary'],
+            highlightbackground=self.colors['border']
         )
-        self.output_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        self.output_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10), ipady=10)
         
-        tk.Button(
+        output_button = tk.Button(
             output_file_frame,
-            text="Выбрать...",
+            text="Выбрать файл",
             command=self.browse_output_file,
-            width=12
-        ).pack(side=tk.RIGHT)
+            font=get_font('default', 12, 'bold'),
+            bg=self.colors['bg_accent'],
+            fg=self.colors['text_primary'],
+            relief=tk.FLAT,
+            bd=0,
+            padx=20,
+            pady=10,
+            cursor="hand2",
+            activebackground='#d0d3d6',
+            activeforeground=self.colors['text_primary']
+        )
+        output_button.pack(side=tk.RIGHT)
         
         # Кнопка конвертации
         convert_button = tk.Button(
-            self.root,
-            text="Конвертировать",
+            main_container,
+            text="🚀 Конвертировать",
             command=self.convert,
-            font=("Arial", 12, "bold"),
-            bg="#0066cc",
+            font=get_font('default', 16, 'bold'),
+            bg=self.colors['primary'],
             fg="white",
-            padx=20,
-            pady=10,
-            cursor="hand2"
+            relief=tk.FLAT,
+            bd=0,
+            padx=40,
+            pady=16,
+            cursor="hand2",
+            activebackground=self.colors['primary_hover'],
+            activeforeground="white"
         )
-        convert_button.pack(pady=20)
+        convert_button.pack(pady=(10, 20))
         
         # Статус бар
+        status_frame = tk.Frame(main_container, bg=self.colors['bg_primary'])
+        status_frame.pack(fill=tk.X)
+        
         self.status_label = tk.Label(
-            self.root,
-            text="Готов к работе",
-            font=("Arial", 9),
-            fg="gray",
+            status_frame,
+            text="✨ Готов к работе",
+            font=get_font('default', 12),
+            fg=self.colors['text_secondary'],
+            bg=self.colors['bg_primary'],
             pady=5
         )
         self.status_label.pack()
@@ -168,7 +282,11 @@ class MarkdownToPPTXApp:
             return
         
         # Обновляем статус
-        self.status_label.config(text="Конвертация...", fg="blue")
+        self.status_label.config(
+            text="⏳ Конвертация в процессе...",
+            fg=self.colors['primary'],
+            font=get_font('default', 12, 'bold')
+        )
         self.root.update()
         
         try:
@@ -177,21 +295,30 @@ class MarkdownToPPTXApp:
             
             # Показываем успешное сообщение
             messagebox.showinfo(
-                "Успех",
+                "✅ Успех",
                 f"Презентация успешно создана!\n\n"
-                f"Файл: {output_file}\n"
-                f"Всего слайдов: {slide_count}"
+                f"📄 Файл: {os.path.basename(output_file)}\n"
+                f"📊 Всего слайдов: {slide_count}\n\n"
+                f"📁 Путь: {output_file}"
             )
             
             self.status_label.config(
-                text=f"Готово! Создано {slide_count} слайдов",
-                fg="green"
+                text=f"✅ Готово! Создано {slide_count} слайдов",
+                fg=self.colors['success'],
+                font=get_font('default', 12, 'bold')
             )
             
         except Exception as e:
             error_msg = str(e)
-            messagebox.showerror("Ошибка", f"Ошибка при конвертации:\n{error_msg}")
-            self.status_label.config(text="Ошибка при конвертации", fg="red")
+            messagebox.showerror(
+                "❌ Ошибка",
+                f"Ошибка при конвертации:\n\n{error_msg}"
+            )
+            self.status_label.config(
+                text="❌ Ошибка при конвертации",
+                fg="#dc3545",
+                font=get_font('default', 12, 'bold')
+            )
 
 def main():
     """Запускает GUI приложение"""
