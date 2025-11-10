@@ -316,9 +316,16 @@ def optimize_sections(sections):
     
     return optimized
 
-def main():
+def convert_markdown_to_pptx(input_file, output_file=None):
+    """Конвертирует Markdown файл в PowerPoint презентацию"""
+    if output_file is None:
+        # Генерируем имя выходного файла на основе входного
+        import os
+        base_name = os.path.splitext(os.path.basename(input_file))[0]
+        output_file = f"{base_name}.pptx"
+    
     # Читаем Markdown файл
-    with open('PRESENTATION.md', 'r', encoding='utf-8') as f:
+    with open(input_file, 'r', encoding='utf-8') as f:
         md_content = f.read()
     
     # Создаем презентацию
@@ -431,11 +438,33 @@ def main():
                     create_content_slide(prs, title, content_text)
     
     # Сохраняем презентацию
-    output_file = 'PRESENTATION.pptx'
     prs.save(output_file)
-    print(f"✅ Презентация создана: {output_file}")
-    print(f"📊 Всего слайдов: {len(prs.slides)}")
-    print(f"🎨 Использована цветовая схема: темно-синий (#003366)")
+    return output_file, len(prs.slides)
+
+def main():
+    """Основная функция для CLI использования"""
+    import sys
+    import os
+    
+    if len(sys.argv) > 1:
+        input_file = sys.argv[1]
+        output_file = sys.argv[2] if len(sys.argv) > 2 else None
+    else:
+        input_file = 'PRESENTATION.md'
+        output_file = 'PRESENTATION.pptx'
+    
+    if not os.path.exists(input_file):
+        print(f"❌ Ошибка: файл {input_file} не найден")
+        sys.exit(1)
+    
+    try:
+        output_file, slide_count = convert_markdown_to_pptx(input_file, output_file)
+        print(f"✅ Презентация создана: {output_file}")
+        print(f"📊 Всего слайдов: {slide_count}")
+        print(f"🎨 Использована цветовая схема: темно-синий (#003366)")
+    except Exception as e:
+        print(f"❌ Ошибка при создании презентации: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
