@@ -173,7 +173,7 @@ def create_slide_with_bullets(prs, title, bullets, max_bullets=7):
         p.space_after = Pt(6)
         
         # Выделяем ключевые слова жирным
-        if '**' in bullet or 'GigaChat' in bullet or 'Giga Web Insight' in bullet:
+        if '**' in bullet:
             p.font.bold = True
     
     # Если есть еще пункты, добавляем заметку
@@ -252,7 +252,7 @@ def create_title_slide(prs, title, subtitle=""):
     if subtitle:
         subtitle_shape.text = clean_markdown_text(subtitle)
     else:
-        subtitle_shape.text = "Интеграция GigaChat – бизнес‑кейс"
+        subtitle_shape.text = ""
     
     subtitle_shape.text_frame.paragraphs[0].font.size = Pt(24)
     subtitle_shape.text_frame.paragraphs[0].font.color.rgb = COLORS['accent']
@@ -341,7 +341,8 @@ def convert_markdown_to_pptx(input_file, output_file=None):
     
     # Создаем титульный слайд
     if sections:
-        main_title = "Giga Web Insight"
+        # Используем первый раздел как заголовок, или общий заголовок
+        main_title = sections[0].get("title", "Презентация") if sections else "Презентация"
         create_title_slide(prs, main_title)
     
     # Обрабатываем разделы
@@ -373,8 +374,8 @@ def convert_markdown_to_pptx(input_file, output_file=None):
                     create_slide_with_bullets(prs, title, bullets)
             continue
         
-        # Пропускаем титульный раздел
-        if "Интеграция GigaChat" in title or not title:
+        # Пропускаем пустые разделы
+        if not title:
             continue
         
         # Если есть подразделы, создаем отдельные слайды
