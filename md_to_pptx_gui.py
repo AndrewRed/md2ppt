@@ -222,7 +222,7 @@ class MarkdownToPPTXApp:
         prompt_button_frame = tk.Frame(main_container, bg=self.colors['bg_primary'])
         prompt_button_frame.pack(fill=tk.X, pady=(0, 15))
         
-        copy_prompt_button = tk.Button(
+        self.copy_prompt_button = tk.Button(
             prompt_button_frame,
             text="📋 Скопировать промпт для языковой модели",
             command=self.copy_prompt_to_clipboard,
@@ -238,7 +238,7 @@ class MarkdownToPPTXApp:
             activebackground='#d0d3d6',
             activeforeground=self.colors['text_primary']
         )
-        copy_prompt_button.pack()
+        self.copy_prompt_button.pack()
         
         # Фрейм для выбора входного файла
         input_frame = tk.Frame(main_container, bg=self.colors['bg_secondary'], relief=tk.FLAT, bd=0)
@@ -424,14 +424,28 @@ class MarkdownToPPTXApp:
                 "Теперь вы можете вставить его в языковую модель."
             )
             # Убираем фокус с кнопок после закрытия messagebox
-            self.root.focus_set()
+            self._reset_button_focus()
         except Exception as e:
             messagebox.showerror(
                 "❌ Ошибка",
                 f"Не удалось скопировать промпт:\n{str(e)}"
             )
             # Убираем фокус с кнопок после закрытия messagebox
+            self._reset_button_focus()
+    
+    def _reset_button_focus(self):
+        """Сбрасывает фокус со всех кнопок"""
+        # Используем after_idle для сброса состояния после обработки всех событий
+        def reset_focus():
+            # Убираем фокус со всех кнопок
+            if hasattr(self, 'copy_prompt_button'):
+                self.copy_prompt_button.config(relief=tk.FLAT, state=tk.NORMAL)
+            # Устанавливаем фокус на root окно
+            self.root.focus_force()
+            # Убираем выделение с любого виджета
             self.root.focus_set()
+        
+        self.root.after_idle(reset_focus)
     
     def convert(self):
         """Выполняет конвертацию"""
